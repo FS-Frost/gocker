@@ -11,7 +11,7 @@ import (
 
 func main() {
 	binary, err := exec.LookPath("docker")
-    checkError(err, "error looking binary path")
+	checkError(err, "error looking binary path")
 
 	containers, err := getContainers(binary)
 	checkError(err, "error getting containers")
@@ -40,8 +40,8 @@ func checkError(err error, format string, a ...any) {
 	if err != nil {
 		s := fmt.Sprintf(format, a...)
 		s = fmt.Sprintf("%s: %v", s, err)
-        panic(s)
-    }
+		panic(s)
+	}
 }
 
 func getContainers(binary string) ([]string, error) {
@@ -64,7 +64,7 @@ func getContainers(binary string) ([]string, error) {
 			continue
 		}
 
-		indexLast := len(sections) -1
+		indexLast := len(sections) - 1
 		last := sections[indexLast]
 		if last == "" {
 			continue
@@ -183,7 +183,7 @@ func exectIntoContainer(binary string, commands []string, container string) erro
 	fmt.Println(cmd.String())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
+	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
 		return err
