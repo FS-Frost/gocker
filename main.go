@@ -32,7 +32,7 @@ func main() {
 	fmt.Printf("Command: %s\n", strings.Join(commands, " "))
 
 	fmt.Println()
-	err = exectIntoContainer(binary, commands, selectedContainer)
+	err = execCommandsOnContainer(binary, commands, selectedContainer)
 	checkError(err, "error exec'ing into container")
 }
 
@@ -90,7 +90,7 @@ func getSelectedContainerIndex(containers []string) (int, error) {
 	}
 
 	for {
-		fmt.Printf("\nEnter container number or name to exec into: ")
+		fmt.Printf("\nEnter container number or name: ")
 		stringSelectedNumber, err := getInput()
 		if err != nil {
 			return 0, fmt.Errorf("error reading selection from input: %v", err)
@@ -125,7 +125,7 @@ func getCommands() ([]string, error) {
 
 	var command string
 	for {
-		fmt.Printf("\nEnter command number or name to exec: ")
+		fmt.Printf("\nEnter command number or name to execute: ")
 		stringSelectedNumber, err := getInput()
 		if err != nil {
 			return nil, fmt.Errorf("error reading selection from input: %v", err)
@@ -176,7 +176,7 @@ func stringSliceContains(slice []string, s string) (bool, int) {
 	return false, 0
 }
 
-func exectIntoContainer(binary string, commands []string, container string) error {
+func execCommandsOnContainer(binary string, commands []string, container string) error {
 	args := []string{"exec", "-it", container}
 	args = append(args, commands...)
 	cmd := exec.Command(binary, args...)
