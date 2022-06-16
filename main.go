@@ -208,7 +208,7 @@ func execCommandsOnContainer(binary string, commands []string, container string)
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	if err != nil {
-		return err
+		fmt.Printf("Error while in container: %v\n", err)
 	}
 
 	exitCode := cmd.ProcessState.ExitCode()
