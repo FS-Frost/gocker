@@ -2,12 +2,18 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 )
+
+type container struct {
+	ID    string
+	Names string
+}
 
 func main() {
 	binary, err := exec.LookPath("docker")
@@ -17,6 +23,11 @@ func main() {
 	checkError(err, "error getting containers")
 	if containers == nil {
 		fmt.Println("No containers running.")
+		return
+	}
+
+	if len(containers) == 0 {
+		fmt.Println("No available containers found")
 		return
 	}
 
@@ -32,7 +43,7 @@ func main() {
 	fmt.Printf("Command: %s\n", strings.Join(commands, " "))
 
 	fmt.Println()
-	err = execCommandsOnContainer(binary, commands, selectedContainer)
+	err = execCommandsOnContainer(binary, commands, selectedContainer.Names)
 	checkError(err, "error exec'ing into container")
 }
 
@@ -44,8 +55,9 @@ func checkError(err error, format string, a ...any) {
 	}
 }
 
-func getContainers(binary string) ([]string, error) {
-	out, err := exec.Command(binary, "ps").Output()
+func getContainers(binary string) ([]container, error) {
+	cmd := exec.Command(binary, "ps", "--format", "{{json .}}")
+	out, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("error reading containers info: %v", err)
 	}
@@ -56,24 +68,24 @@ func getContainers(binary string) ([]string, error) {
 		return nil, nil
 	}
 
-	container := []string{}
+	containers := []container{}
 	for i := 1; i < len(lines); i++ {
 		l := lines[i]
-		sections := strings.Split(l, " ")
-		if len(sections) < 1 {
+		if l == "" {
 			continue
 		}
 
-		indexLast := len(sections) - 1
-		last := sections[indexLast]
-		if last == "" {
-			continue
+		bs := []byte(l)
+		c := &container{}
+		err = json.Unmarshal(bs, c)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing docker ps output at line %d: %v\nJSON: <%s>", i+1, err, l)
 		}
 
-		container = append(container, last)
+		containers = append(containers, *c)
 	}
 
-	return container, nil
+	return containers, nil
 }
 
 func getInput() (string, error) {
@@ -83,10 +95,10 @@ func getInput() (string, error) {
 	return trimmedText, err
 }
 
-func getSelectedContainerIndex(containers []string) (int, error) {
+func getSelectedContainerIndex(containers []container) (int, error) {
 	fmt.Println("Containers:")
-	for i, n := range containers {
-		fmt.Printf("%d. %s\n", i+1, n)
+	for i, c := range containers {
+		fmt.Printf("%d. %s\n", i+1, c.Names)
 	}
 
 	for {
@@ -96,7 +108,7 @@ func getSelectedContainerIndex(containers []string) (int, error) {
 			return 0, fmt.Errorf("error reading selection from input: %v", err)
 		}
 
-		userWroteListCommand, selectedIndex := stringSliceContains(containers, stringSelectedNumber)
+		userWroteListCommand, selectedIndex := containerSliceContainsName(containers, stringSelectedNumber)
 		if userWroteListCommand {
 			return selectedIndex, nil
 		}
@@ -169,6 +181,16 @@ func getCommands() ([]string, error) {
 func stringSliceContains(slice []string, s string) (bool, int) {
 	for i, v := range slice {
 		if v == s {
+			return true, i
+		}
+	}
+
+	return false, 0
+}
+
+func containerSliceContainsName(slice []container, s string) (bool, int) {
+	for i, c := range slice {
+		if c.Names == s {
 			return true, i
 		}
 	}
