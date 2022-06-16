@@ -35,7 +35,7 @@ func main() {
 	checkError(err, "error getting selected container")
 
 	selectedContainer := containers[selectedContainerIndex]
-	fmt.Printf("Container: %s\n", selectedContainer)
+	fmt.Printf("Container: %s (%s)\n", selectedContainer.Names, selectedContainer.ID)
 
 	fmt.Println()
 	commands, err := getCommands()
@@ -137,7 +137,7 @@ func getCommands() ([]string, error) {
 
 	var command string
 	for {
-		fmt.Printf("\nEnter command number or name to execute: ")
+		fmt.Printf("\nEnter command number or raw command to execute: ")
 		stringSelectedNumber, err := getInput()
 		if err != nil {
 			return nil, fmt.Errorf("error reading selection from input: %v", err)
