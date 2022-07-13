@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -31,6 +32,10 @@ func main() {
 		return
 	}
 
+	sort.Slice(containers, func(i, j int) bool {
+		return containers[i].Names < containers[j].Names
+	})
+
 	selectedContainerIndex, err := getSelectedContainerIndex(containers)
 	checkError(err, "error getting selected container")
 
@@ -43,8 +48,7 @@ func main() {
 	fmt.Printf("Command: %s\n", strings.Join(commands, " "))
 
 	fmt.Println()
-	err = execCommandsOnContainer(binary, commands, selectedContainer.Names)
-	checkError(err, "error exec'ing into container")
+	execCommandsOnContainer(binary, commands, selectedContainer.Names)
 }
 
 func checkError(err error, format string, a ...any) {
@@ -69,7 +73,7 @@ func getContainers(binary string) ([]container, error) {
 	}
 
 	containers := []container{}
-	for i := 1; i < len(lines); i++ {
+	for i := 0; i < len(lines); i++ {
 		l := lines[i]
 		if l == "" {
 			continue
@@ -198,7 +202,7 @@ func containerSliceContainsName(slice []container, s string) (bool, int) {
 	return false, 0
 }
 
-func execCommandsOnContainer(binary string, commands []string, container string) error {
+func execCommandsOnContainer(binary string, commands []string, container string) {
 	args := []string{"exec", "-it", container}
 	args = append(args, commands...)
 	cmd := exec.Command(binary, args...)
@@ -213,5 +217,4 @@ func execCommandsOnContainer(binary string, commands []string, container string)
 
 	exitCode := cmd.ProcessState.ExitCode()
 	fmt.Printf("Exited from %s with code %d\n", container, exitCode)
-	return nil
 }
