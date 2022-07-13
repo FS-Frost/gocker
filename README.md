@@ -2,6 +2,11 @@
 
  CLI tool to execute commands on docker containers.
 
+## Requirements
+
+- [Go](https://go.dev/)
+- [Docker](https://www.docker.com/)
+
 ## Install
 
 ```shell
