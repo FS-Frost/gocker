@@ -5,7 +5,7 @@
 ## Install
 
 ```shell
-go install github.com/FS-Frost/enforce-env@latest
+go install github.com/FS-Frost/gocker
 ```
 
 ## Usage
