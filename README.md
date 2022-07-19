@@ -21,7 +21,7 @@ gocker
 
 ### Example Output
 
-```shell
+```
 Containers:
 1. golang
 2. ubuntu
