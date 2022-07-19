@@ -10,7 +10,7 @@
 ## Install
 
 ```shell
-go install github.com/FS-Frost/gocker
+go install github.com/FS-Frost/gocker@latest
 ```
 
 ## Usage
