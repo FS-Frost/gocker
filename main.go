@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -30,6 +31,16 @@ type container struct {
 }
 
 func main() {
+	pContainer := flag.String("container", "", "container name")
+	pCmd := flag.String("cmd", "bash", "command to execute. Defaults to 'bash'")
+	phelp := flag.Bool("help", false, "prints usage")
+	flag.Parse()
+
+	if *phelp {
+		printHelp()
+		return
+	}
+
 	conf, err := getConfig()
 	if err != nil {
 		fmt.Printf("config error: %v\n", err)
@@ -37,6 +48,34 @@ func main() {
 
 	binary, err := exec.LookPath("docker")
 	checkError(err, "error looking for docker binary path")
+
+	if *pContainer != "" {
+		if *pCmd == "" {
+			printHelp()
+			return
+		}
+
+		commands := strings.Split(*pCmd, " ")
+		containerName := *pContainer
+		execCommandsOnContainer(binary, commands, containerName)
+		return
+	}
+
+	if len(os.Args) >= 2 && os.Args[1] != "" {
+		if *pCmd == "" {
+			printHelp()
+			return
+		}
+
+		commands := []string{"bash"}
+		if len(os.Args) > 2 {
+			commands = os.Args[2:]
+		}
+
+		containerName := os.Args[1]
+		execCommandsOnContainer(binary, commands, containerName)
+		return
+	}
 
 	containers, err := getContainers(binary)
 	checkError(err, "error getting containers")
@@ -74,6 +113,11 @@ func main() {
 
 	fmt.Println()
 	execCommandsOnContainer(binary, commands, selectedContainer.Names)
+}
+
+func printHelp() {
+	fmt.Println("Usage for gocker:")
+	flag.PrintDefaults()
 }
 
 func checkError(err error, format string, a ...any) {
