@@ -14,6 +14,10 @@ import (
 	"strings"
 )
 
+const (
+	_repo = "github.com/FS-Frost/gocker"
+)
+
 type config struct {
 	Containers map[string][]string `json:"containers"`
 }
@@ -34,10 +38,18 @@ func main() {
 	pContainer := flag.String("container", "", "container name")
 	pCmd := flag.String("cmd", "bash", "command to execute")
 	phelp := flag.Bool("help", false, "prints usage")
+	pUpdate := flag.Bool("update", false, "updates gocker installation")
 	flag.Parse()
 
 	if *phelp {
 		printHelp()
+		return
+	}
+
+	if *pUpdate {
+		err := updateGocker()
+		checkError(err, "error updating gocker")
+		fmt.Println("Updated!")
 		return
 	}
 
@@ -116,6 +128,7 @@ func main() {
 }
 
 func printHelp() {
+	fmt.Println(_repo)
 	fmt.Println("Usage for gocker:")
 
 	fmt.Println("a) With flags:")
@@ -133,6 +146,22 @@ func printHelp() {
 	fmt.Println("  b2) Custom command:")
 	fmt.Println("    gocker [container-name] [command] [arg1]...[argN]")
 	fmt.Println("      Example: 'gocker mysql ls -l'")
+}
+
+func updateGocker() error {
+	binary, err := exec.LookPath("go")
+	if err != nil {
+		return err
+	}
+
+	pkg := fmt.Sprintf("%s@latest", _repo)
+	cmd := exec.Command(binary, "install", pkg)
+	fmt.Println(cmd.String())
+	stdout, err := cmd.Output()
+	if err != nil {
+		fmt.Println(string(stdout))
+	}
+	return err
 }
 
 func checkError(err error, format string, a ...any) {
