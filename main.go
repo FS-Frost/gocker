@@ -32,7 +32,7 @@ type container struct {
 
 func main() {
 	pContainer := flag.String("container", "", "container name")
-	pCmd := flag.String("cmd", "bash", "command to execute. Defaults to 'bash'")
+	pCmd := flag.String("cmd", "bash", "command to execute")
 	phelp := flag.Bool("help", false, "prints usage")
 	flag.Parse()
 
@@ -117,7 +117,22 @@ func main() {
 
 func printHelp() {
 	fmt.Println("Usage for gocker:")
+
+	fmt.Println("a) With flags:")
 	flag.PrintDefaults()
+	fmt.Println()
+	fmt.Println("  Example: 'gocker -container mysql -cmd \"ls -l\"'")
+
+	fmt.Println()
+	fmt.Println("b) Without flags:")
+
+	fmt.Println("  b1) Interactive shell:")
+	fmt.Println("    gocker")
+	fmt.Println()
+
+	fmt.Println("  b2) Custom command:")
+	fmt.Println("    gocker [container-name] [command] [arg1]...[argN]")
+	fmt.Println("      Example: 'gocker mysql ls -l'")
 }
 
 func checkError(err error, format string, a ...any) {
