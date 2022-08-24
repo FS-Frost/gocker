@@ -149,7 +149,7 @@ func printHelp() {
 	fmt.Printf("Config: %s\n", configPath)
 	fmt.Println()
 
-	fmt.Println("Usage for gocker:")
+	fmt.Println("Usage:")
 	fmt.Println("a) With flags:")
 	flag.PrintDefaults()
 	fmt.Println()
