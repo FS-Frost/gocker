@@ -43,6 +43,7 @@ func main() {
 	pCmd := flag.String("cmd", "bash", "command to execute")
 	phelp := flag.Bool("help", false, "prints usage")
 	pUpdate := flag.Bool("update", false, "updates gocker installation")
+	pVersion := flag.Bool("version", false, "prints current version")
 	flag.Parse()
 
 	conf, err := getConfig()
@@ -58,6 +59,11 @@ func main() {
 	if *pUpdate {
 		err := updateGocker(conf)
 		checkError(err, "error updating gocker")
+		return
+	}
+
+	if *pVersion {
+		fmt.Printf("gocker version %s\n", conf.Version)
 		return
 	}
 
