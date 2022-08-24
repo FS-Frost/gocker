@@ -41,6 +41,7 @@ type container struct {
 func main() {
 	pContainer := flag.String("container", "", "container name")
 	pCmd := flag.String("cmd", "bash", "command to execute")
+	pConfig := flag.Bool("config", false, "prints user config")
 	phelp := flag.Bool("help", false, "prints usage")
 	pUpdate := flag.Bool("update", false, "updates gocker installation")
 	pVersion := flag.Bool("version", false, "prints current version")
@@ -52,6 +53,11 @@ func main() {
 	}
 
 	defer checkVersion(conf)
+
+	if *pConfig {
+		printConfig(conf)
+		return
+	}
 
 	if *phelp {
 		printHelp()
@@ -165,6 +171,23 @@ func printHelp() {
 	fmt.Println("  b2) Custom command:")
 	fmt.Println("    gocker [container-name] [command] [arg1]...[argN]")
 	fmt.Println("      Example: 'gocker mysql ls -l'")
+}
+
+func printConfig(conf *config) {
+	configPath, err := getConfigPath()
+	if err != nil {
+		fmt.Printf("error getting config path: %v\n", err)
+		return
+	}
+
+	fmt.Println(configPath)
+
+	bs, err := os.ReadFile(configPath)
+	if err != nil {
+		fmt.Printf("error reading config: %v", err)
+	}
+
+	fmt.Printf("\n%s\n", string(bs))
 }
 
 func updateGocker(conf *config) error {
