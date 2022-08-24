@@ -174,7 +174,7 @@ func updateGocker(conf *config) error {
 	}
 
 	if conf.Version == latestSha {
-		fmt.Printf("Already at latest version: %s\n", conf.Version)
+		fmt.Printf("Already at the latest version: %s\n", conf.Version)
 		fmt.Println("Update anyways? y/N")
 		input, err := getInput()
 		if err != nil {
