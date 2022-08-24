@@ -2,10 +2,13 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -19,6 +22,7 @@ const (
 )
 
 type config struct {
+	Version    string
 	Containers map[string][]string `json:"containers"`
 }
 
@@ -41,21 +45,20 @@ func main() {
 	pUpdate := flag.Bool("update", false, "updates gocker installation")
 	flag.Parse()
 
+	conf, err := getConfig()
+	if err != nil {
+		fmt.Printf("config error: %v\n", err)
+	}
+
 	if *phelp {
 		printHelp()
 		return
 	}
 
 	if *pUpdate {
-		err := updateGocker()
+		err := updateGocker(conf)
 		checkError(err, "error updating gocker")
-		fmt.Println("Updated!")
 		return
-	}
-
-	conf, err := getConfig()
-	if err != nil {
-		fmt.Printf("config error: %v\n", err)
 	}
 
 	binary, err := exec.LookPath("docker")
@@ -128,9 +131,17 @@ func main() {
 }
 
 func printHelp() {
-	fmt.Println(_repo)
-	fmt.Println("Usage for gocker:")
+	fmt.Printf("Repository: https://www.%v\n", _repo)
 
+	configPath, err := getConfigPath()
+	if err != nil {
+		fmt.Printf("error getting config path: %v", err)
+	}
+
+	fmt.Printf("Config: %s\n", configPath)
+	fmt.Println()
+
+	fmt.Println("Usage for gocker:")
 	fmt.Println("a) With flags:")
 	flag.PrintDefaults()
 	fmt.Println()
@@ -148,7 +159,26 @@ func printHelp() {
 	fmt.Println("      Example: 'gocker mysql ls -l'")
 }
 
-func updateGocker() error {
+func updateGocker(conf *config) error {
+	latestSha, err := getLatestCommitSha()
+	if err != nil {
+		return fmt.Errorf("error fetching latest version: %v", err)
+	}
+
+	if conf.Version == latestSha {
+		fmt.Printf("Already at latest version: %s\n", conf.Version)
+		fmt.Println("Update anyways? y/N")
+		input, err := getInput()
+		if err != nil {
+			return fmt.Errorf("error reading input: %v", err)
+		}
+
+		cancel, _ := stringSliceContains([]string{"", "n", "no"}, strings.ToLower(input))
+		if cancel {
+			return nil
+		}
+	}
+
 	binary, err := exec.LookPath("go")
 	if err != nil {
 		return err
@@ -161,7 +191,49 @@ func updateGocker() error {
 	if err != nil {
 		fmt.Println(string(stdout))
 	}
+
+	conf.Version = latestSha
+	err = saveConfig(conf)
+	if err != nil {
+		fmt.Printf("Error saving config: %v\n", err)
+	}
+
+	fmt.Printf("Updated to version %s\n", latestSha)
 	return err
+}
+
+func getLatestCommitSha() (string, error) {
+	url := "https://api.github.com/repos/FS-Frost/gocker/commits/main"
+	req, err := http.NewRequest(http.MethodGet, url, bytes.NewBufferString(""))
+	if err != nil {
+		return "", fmt.Errorf("error creating request: %v", err)
+	}
+
+	client := http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	if res == nil {
+		return "", fmt.Errorf("null response")
+	}
+
+	bs, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading body: %v", err)
+	}
+
+	jsonResponse := struct {
+		Sha string `json:"sha"`
+	}{}
+
+	err = json.Unmarshal(bs, &jsonResponse)
+	if err != nil {
+		return "", fmt.Errorf("error parging JSON: %v", err)
+	}
+
+	return jsonResponse.Sha, nil
 }
 
 func checkError(err error, format string, a ...any) {
