@@ -24,7 +24,7 @@ Prints:
 
 ```shell
 Repository: https://www.github.com/FS-Frost/gocker
-Config: /home/aptus/.gocker/config.json
+Config: /home/myself/.gocker/config.json
 
 Usage:
 a) With flags:
