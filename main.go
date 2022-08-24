@@ -192,7 +192,7 @@ func updateGocker(conf *config) error {
 		return err
 	}
 
-	pkg := fmt.Sprintf("%s@latest", _repo)
+	pkg := fmt.Sprintf("%s@%s", _repo, latestSha)
 	cmd := exec.Command(binary, "install", pkg)
 	fmt.Println(cmd.String())
 	stdout, err := cmd.Output()
