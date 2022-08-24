@@ -22,7 +22,7 @@ const (
 )
 
 type config struct {
-	Version    string
+	Version    string              `json:"version"`
 	Containers map[string][]string `json:"containers"`
 }
 
@@ -50,6 +50,8 @@ func main() {
 	if err != nil {
 		fmt.Printf("config error: %v\n", err)
 	}
+
+	defer checkVersion(conf)
 
 	if *phelp {
 		printHelp()
@@ -240,6 +242,15 @@ func getLatestCommitSha() (string, error) {
 	}
 
 	return jsonResponse.Sha, nil
+}
+
+func checkVersion(conf *config) {
+	latestSha, _ := getLatestCommitSha()
+	if latestSha == "" || conf.Version == latestSha {
+		return
+	}
+
+	fmt.Println("\nNew version available, run this to update:\ngocker -update")
 }
 
 func checkError(err error, format string, a ...any) {
