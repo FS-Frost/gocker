@@ -16,7 +16,40 @@ go install github.com/FS-Frost/gocker@latest
 ## Usage
 
 ```shell
-gocker
+gocker -help
+gocker --help
+```
+
+Prints:
+
+```shell
+Repository: https://www.github.com/FS-Frost/gocker
+Config: /home/aptus/.gocker/config.json
+
+Usage:
+a) With flags:
+  -cmd string
+        command to execute (default "bash")
+  -config
+        prints user config
+  -container string
+        container name
+  -help
+        prints usage
+  -update
+        updates gocker installation
+  -version
+        prints current version
+
+  Example: 'gocker -container mysql -cmd "ls -l"'
+
+b) Without flags:
+  b1) Interactive shell:
+    gocker
+
+  b2) Custom command:
+    gocker [container-name] [command] [arg1]...[argN]
+      Example: 'gocker mysql ls -l'
 ```
 
 ### Example Output
