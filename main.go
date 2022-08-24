@@ -18,7 +18,7 @@ type container struct {
 
 func main() {
 	binary, err := exec.LookPath("docker")
-	checkError(err, "error looking binary path")
+	checkError(err, "error looking for docker binary path")
 
 	containers, err := getContainers(binary)
 	checkError(err, "error getting containers")
