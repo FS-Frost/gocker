@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	_repo = "github.com/FS-Frost/gocker"
+	_repo       = "github.com/FS-Frost/gocker"
+	_configFile = "config.json"
 )
 
 type config struct {
@@ -475,7 +476,7 @@ func getConfigPath() (string, error) {
 		return "", fmt.Errorf("error creating config directory: %v", err)
 	}
 
-	filePath := path.Join(confDir, "config.json")
+	filePath := path.Join(confDir, _configFile)
 	return filePath, nil
 }
 
@@ -519,7 +520,7 @@ func saveConfig(conf *config) error {
 		return fmt.Errorf("error creating config directory: %v", err)
 	}
 
-	filePath := path.Join(confDir, "config.json")
+	filePath := path.Join(confDir, _configFile)
 	bs, err := json.MarshalIndent(conf, "", "\t")
 	if err != nil {
 		return fmt.Errorf("error encoding to json: %v", err)
