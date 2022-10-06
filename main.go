@@ -281,7 +281,8 @@ func checkError(err error, format string, a ...any) {
 	if err != nil {
 		s := fmt.Sprintf(format, a...)
 		s = fmt.Sprintf("%s: %v", s, err)
-		panic(s)
+		fmt.Printf("ERROR: %s\n", s)
+		os.Exit(1)
 	}
 }
 
