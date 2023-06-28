@@ -46,6 +46,7 @@ func main() {
 	phelp := flag.Bool("help", false, "prints usage")
 	pUpdate := flag.Bool("update", false, "updates gocker installation")
 	pVersion := flag.Bool("version", false, "prints current version")
+	pLogs := flag.Bool("logs", false, "streams logs from one container")
 	flag.Parse()
 
 	conf, err := getConfig()
@@ -78,6 +79,45 @@ func main() {
 
 	binary, err := exec.LookPath("docker")
 	checkError(err, "error looking for docker binary path")
+
+	if *pLogs {
+		containerName := ""
+		if len(os.Args) > 2 {
+			containerName = os.Args[2]
+		} else {
+			containers, err := getContainers(binary)
+			checkError(err, "error getting containers")
+			if containers == nil {
+				fmt.Println("No containers running.")
+				return
+			}
+
+			if len(containers) == 0 {
+				fmt.Println("No available containers found")
+				return
+			}
+
+			selectedContainerIndex, err := getSelectedContainerIndex(conf, containers)
+			checkError(err, "error getting selected container")
+
+			selectedContainer := containers[selectedContainerIndex]
+			fmt.Printf("Container: %s (%s)\n", selectedContainer.Names, selectedContainer.ID)
+
+			containerName = selectedContainer.Names
+		}
+
+		args := []string{"logs", "-f", containerName}
+		cmd := exec.Command(binary, args...)
+		fmt.Println(cmd.String())
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		checkError(err, "container error")
+
+		exitCode := cmd.ProcessState.ExitCode()
+		fmt.Printf("Exited from %s with code %d\n", containerName, exitCode)
+		return
+	}
 
 	if *pContainer != "" {
 		if *pCmd == "" {
